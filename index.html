@@ -236,24 +236,13 @@
   async function translate(text) {
     showDots(); hideError();
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/translate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1000,
-          system: `Je bent een professionele vertaler gespecialiseerd in islamitische vrijdagpreken (khutbahs).
-Regels:
-- Vertaal nauwkeurig en natuurlijk naar Nederlands
-- Behoud islamitische termen zoals: Alhamdulillah, SubhanAllah, Allahu Akbar, Inshallah, Mashallah, Ummah, Sunnah, Hadith, Quran, ayah, surah
-- Als een Koranvers geciteerd wordt, vertaal de betekenis elegant
-- Gebruik formeel maar toegankelijk Nederlands
-- Geef ALLEEN de vertaling terug, geen uitleg, geen preamble`,
-          messages: [{ role: 'user', content: text }]
-        })
-      });
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ text: text })
+          
       const data = await res.json();
-      const t = data.content?.[0]?.text?.trim();
+      const t = data.translation;
       if (t) { setTranslation(t); addToHistory(t); }
     } catch(e) {
       showError('Verbindingsfout. Controleer je internetverbinding.');
