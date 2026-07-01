@@ -1,285 +1,139 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Kashf · Live Vertaling</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; background: #0D1B2A; color: #F5F0E8; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
-    .app { min-height: 100vh; display: flex; flex-direction: column; max-width: 600px; margin: 0 auto; }
-    .nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid rgba(201,168,76,0.12); position: sticky; top: 0; background: #0D1B2A; z-index: 10; }
-    .logo { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: #C9A84C; line-height: 1; }
-    .logo small { font-size: 0.6rem; font-family: 'Inter', sans-serif; color: #6B8FA3; display: block; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 400; margin-top: 4px; }
-    .mode-toggle { display: flex; gap: 6px; background: #1A2B3C; padding: 4px; border-radius: 10px; }
-    .mode-btn { padding: 9px 14px; border: none; border-radius: 7px; font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 500; cursor: pointer; background: transparent; color: #6B8FA3; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
-    .mode-btn.active { background: #C9A84C; color: #0D1B2A; font-weight: 600; }
-    .screen { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 28px 20px 60px; gap: 20px; }
-    .screen.hidden { display: none; }
-    .section-label { font-size: 0.68rem; color: #6B8FA3; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; align-self: flex-start; }
-    .lang-row { display: flex; gap: 8px; width: 100%; }
-    .lang-btn { flex: 1; padding: 12px 6px; background: #1A2B3C; border: 1.5px solid rgba(201,168,76,0.12); border-radius: 10px; color: #6B8FA3; font-family: 'Inter', sans-serif; font-size: 0.76rem; font-weight: 500; cursor: pointer; text-align: center; transition: all 0.18s; -webkit-tap-highlight-color: transparent; }
-    .lang-btn.active { border-color: #C9A84C; color: #C9A84C; background: rgba(201,168,76,0.07); }
-    .record-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
-    .record-btn { width: 130px; height: 130px; border-radius: 50%; border: 3px solid #C9A84C; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: all 0.3s; -webkit-tap-highlight-color: transparent; }
-    .record-btn:active { transform: scale(0.94); }
-    .record-btn.recording { border-color: #E05252; background: rgba(224,82,82,0.06); animation: pulse 1.8s ease-out infinite; }
-    @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(224,82,82,0.35)} 70%{box-shadow:0 0 0 22px rgba(224,82,82,0)} 100%{box-shadow:0 0 0 0 rgba(224,82,82,0)} }
-    .record-icon { font-size: 2.8rem; line-height: 1; }
-    .record-lbl { font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: #6B8FA3; font-weight: 500; }
-    .record-lbl.on { color: #E05252; }
-    .record-hint { font-size: 0.8rem; color: #6B8FA3; text-align: center; line-height: 1.65; max-width: 270px; }
-    .box { width: 100%; background: #1A2B3C; border-radius: 14px; padding: 18px 20px; border: 1px solid rgba(201,168,76,0.1); }
-    .box-lbl { font-size: 0.63rem; color: #C9A84C; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 10px; }
-    .box-text { font-size: 0.9rem; color: #F5F0E8; line-height: 1.7; font-weight: 300; }
-    .box-text.dim { color: rgba(245,240,232,0.38); font-style: italic; }
-    .box-text.interim { color: rgba(245,240,232,0.5); font-style: italic; }
-    .trans-box { width: 100%; background: #1A2B3C; border-radius: 16px; padding: 22px; border: 1px solid rgba(201,168,76,0.22); min-height: 110px; }
-    .trans-text { font-family: 'Playfair Display', serif; font-size: 1.15rem; color: #F5F0E8; line-height: 1.85; }
-    .trans-text.dim { font-family: 'Inter', sans-serif; font-size: 0.88rem; color: #6B8FA3; font-style: italic; font-weight: 300; }
-    .fallback-note { width: 100%; font-size: 0.8rem; color: #C9A84C; background: rgba(201,168,76,0.07); border: 1px solid rgba(201,168,76,0.2); border-radius: 12px; padding: 14px 16px; line-height: 1.6; text-align: center; }
-    textarea { width: 100%; background: #1A2B3C; border: 1.5px solid rgba(201,168,76,0.18); border-radius: 12px; padding: 14px 16px; color: #F5F0E8; font-family: 'Inter', sans-serif; font-size: 0.92rem; outline: none; resize: none; line-height: 1.6; }
-    textarea::placeholder { color: #6B8FA3; }
-    textarea:focus { border-color: rgba(201,168,76,0.45); }
-    .send-btn { width: 100%; background: #C9A84C; color: #0D1B2A; border: none; border-radius: 12px; padding: 15px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-    .send-btn:active { transform: scale(0.97); }
-    .send-btn:disabled { opacity: 0.4; }
-    .dots { display: flex; gap: 5px; align-items: center; padding: 6px 0; }
-    .dots span { width: 8px; height: 8px; background: #C9A84C; border-radius: 50%; animation: dot 1.4s ease-in-out infinite; }
-    .dots span:nth-child(2) { animation-delay: 0.2s; }
-    .dots span:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes dot { 0%,80%,100%{opacity:0.2;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
-    .error-box { width: 100%; background: rgba(224,82,82,0.07); border: 1px solid rgba(224,82,82,0.22); border-radius: 12px; padding: 14px 18px; font-size: 0.82rem; color: #E05252; line-height: 1.55; text-align: center; }
-    .history-wrap { width: 100%; display: flex; flex-direction: column; gap: 8px; }
-    .history-item { background: rgba(26,43,60,0.6); border-radius: 10px; padding: 12px 16px; font-family: 'Playfair Display', serif; font-size: 0.88rem; color: rgba(245,240,232,0.48); line-height: 1.7; border-left: 2px solid rgba(201,168,76,0.18); }
-    .glyph { font-family: 'Playfair Display', serif; font-size: 5rem; color: #C9A84C; line-height: 1; text-align: center; user-select: none; animation: idle 5s ease-in-out infinite; }
-    .glyph.live { animation: glive 2.2s ease-in-out infinite; }
-    @keyframes idle { 0%,100%{opacity:0.1;transform:scale(0.97)} 50%{opacity:0.22;transform:scale(1.01)} }
-    @keyframes glive { 0%,100%{opacity:0.55;transform:scale(0.98)} 50%{opacity:1;transform:scale(1.04)} }
-    .glyph-sub { font-size: 0.72rem; color: #6B8FA3; letter-spacing: 0.14em; text-transform: uppercase; text-align: center; }
-    .listener-card { width: 100%; background: #1A2B3C; border-radius: 20px; padding: 26px 22px; border: 1px solid rgba(201,168,76,0.15); display: flex; flex-direction: column; gap: 18px; }
-    .listener-header { display: flex; align-items: center; justify-content: space-between; }
-    .live-pill { display: flex; align-items: center; gap: 6px; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
-    .live-pill.on { color: #E05252; }
-    .live-pill.off { color: #6B8FA3; }
-    .live-dot { width: 7px; height: 7px; border-radius: 50%; }
-    .live-dot.on { background: #E05252; animation: blink 1.3s ease-in-out infinite; }
-    .live-dot.off { background: #6B8FA3; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.15} }
-    .lang-pill { font-size: 0.7rem; color: #6B8FA3; background: rgba(107,143,163,0.1); padding: 4px 10px; border-radius: 20px; }
-    .listener-trans { font-family: 'Playfair Display', serif; font-size: 1.28rem; line-height: 1.85; color: #F5F0E8; }
-    .listener-placeholder { font-family: 'Inter', sans-serif; font-size: 0.88rem; color: #6B8FA3; font-style: italic; line-height: 1.7; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Kashf · Live Vertaling</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0D1B2A;color:#F5F0E8;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+.app{min-height:100vh;display:flex;flex-direction:column;max-width:600px;margin:0 auto}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(201,168,76,0.12);position:sticky;top:0;background:#0D1B2A;z-index:10}
+.logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:#C9A84C;line-height:1}
+.logo small{font-size:0.6rem;font-family:'Inter',sans-serif;color:#6B8FA3;display:block;letter-spacing:0.14em;text-transform:uppercase;font-weight:400;margin-top:4px}
+.mode-toggle{display:flex;gap:6px;background:#1A2B3C;padding:4px;border-radius:10px}
+.mode-btn{padding:9px 14px;border:none;border-radius:7px;font-family:'Inter',sans-serif;font-size:0.78rem;font-weight:500;cursor:pointer;background:transparent;color:#6B8FA3;transition:all 0.2s;-webkit-tap-highlight-color:transparent}
+.mode-btn.active{background:#C9A84C;color:#0D1B2A;font-weight:600}
+.screen{flex:1;display:flex;flex-direction:column;align-items:center;padding:28px 20px 60px;gap:20px}
+.screen.hidden{display:none}
+.section-label{font-size:0.68rem;color:#6B8FA3;letter-spacing:0.14em;text-transform:uppercase;font-weight:500;align-self:flex-start}
+.lang-row{display:flex;gap:8px;width:100%}
+.lang-btn{flex:1;padding:12px 6px;background:#1A2B3C;border:1.5px solid rgba(201,168,76,0.12);border-radius:10px;color:#6B8FA3;font-family:'Inter',sans-serif;font-size:0.76rem;font-weight:500;cursor:pointer;text-align:center;transition:all 0.18s;-webkit-tap-highlight-color:transparent}
+.lang-btn.active{border-color:#C9A84C;color:#C9A84C;background:rgba(201,168,76,0.07)}
+.record-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;width:100%}
+.record-btn{width:130px;height:130px;border-radius:50%;border:3px solid #C9A84C;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:all 0.3s;-webkit-tap-highlight-color:transparent}
+.record-btn.recording{border-color:#E05252;background:rgba(224,82,82,0.06);animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,82,82,0.35)}70%{box-shadow:0 0 0 22px rgba(224,82,82,0)}100%{box-shadow:0 0 0 0 rgba(224,82,82,0)}}
+.record-icon{font-size:2.8rem;line-height:1}
+.record-lbl{font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:#6B8FA3;font-weight:500}
+.record-lbl.on{color:#E05252}
+.record-hint{font-size:0.8rem;color:#6B8FA3;text-align:center;line-height:1.65;max-width:270px}
+.box{width:100%;background:#1A2B3C;border-radius:14px;padding:18px 20px;border:1px solid rgba(201,168,76,0.1)}
+.box-lbl{font-size:0.63rem;color:#C9A84C;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;margin-bottom:10px}
+.box-text{font-size:0.9rem;color:#F5F0E8;line-height:1.7;font-weight:300}
+.box-text.dim{color:rgba(245,240,232,0.38);font-style:italic}
+.box-text.interim{color:rgba(245,240,232,0.5);font-style:italic}
+.trans-box{width:100%;background:#1A2B3C;border-radius:16px;padding:22px;border:1px solid rgba(201,168,76,0.22);min-height:110px}
+.trans-text{font-family:'Playfair Display',serif;font-size:1.15rem;color:#F5F0E8;line-height:1.85}
+.trans-text.dim{font-family:'Inter',sans-serif;font-size:0.88rem;color:#6B8FA3;font-style:italic;font-weight:300}
+.dots{display:flex;gap:5px;align-items:center;padding:6px 0}
+.dots span{width:8px;height:8px;background:#C9A84C;border-radius:50%;animation:dot 1.4s ease-in-out infinite}
+.dots span:nth-child(2){animation-delay:0.2s}
+.dots span:nth-child(3){animation-delay:0.4s}
+@keyframes dot{0%,80%,100%{opacity:0.2;transform:scale(0.8)}40%{opacity:1;transform:scale(1)}}
+.error-box{width:100%;background:rgba(224,82,82,0.07);border:1px solid rgba(224,82,82,0.22);border-radius:12px;padding:14px 18px;font-size:0.82rem;color:#E05252;line-height:1.55;text-align:center}
+.history-wrap{width:100%;display:flex;flex-direction:column;gap:8px}
+.history-item{background:rgba(26,43,60,0.6);border-radius:10px;padding:12px 16px;font-family:'Playfair Display',serif;font-size:0.88rem;color:rgba(245,240,232,0.48);line-height:1.7;border-left:2px solid rgba(201,168,76,0.18)}
+.glyph{font-family:'Playfair Display',serif;font-size:5rem;color:#C9A84C;line-height:1;text-align:center;user-select:none;animation:idle 5s ease-in-out infinite}
+.glyph.live{animation:glive 2.2s ease-in-out infinite}
+@keyframes idle{0%,100%{opacity:0.1;transform:scale(0.97)}50%{opacity:0.22;transform:scale(1.01)}}
+@keyframes glive{0%,100%{opacity:0.55;transform:scale(0.98)}50%{opacity:1;transform:scale(1.04)}}
+.glyph-sub{font-size:0.72rem;color:#6B8FA3;letter-spacing:0.14em;text-transform:uppercase;text-align:center}
+.listener-card{width:100%;background:#1A2B3C;border-radius:20px;padding:26px 22px;border:1px solid rgba(201,168,76,0.15);display:flex;flex-direction:column;gap:18px}
+.listener-header{display:flex;align-items:center;justify-content:space-between}
+.live-pill{display:flex;align-items:center;gap:6px;font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase}
+.live-pill.on{color:#E05252}
+.live-pill.off{color:#6B8FA3}
+.live-dot{width:7px;height:7px;border-radius:50%}
+.live-dot.on{background:#E05252;animation:blink 1.3s ease-in-out infinite}
+.live-dot.off{background:#6B8FA3}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.15}}
+.lang-pill{font-size:0.7rem;color:#6B8FA3;background:rgba(107,143,163,0.1);padding:4px 10px;border-radius:20px}
+.listener-trans{font-family:'Playfair Display',serif;font-size:1.28rem;line-height:1.85;color:#F5F0E8}
+.listener-placeholder{font-family:'Inter',sans-serif;font-size:0.88rem;color:#6B8FA3;font-style:italic;line-height:1.7}
+</style>
 </head>
 <body>
 <div class="app">
-  <nav class="nav">
-    <div class="logo">كشف<small>Kashf · Live Vertaling</small></div>
-    <div class="mode-toggle">
-      <button class="mode-btn active" onclick="setMode('imam',this)">🎙 Imam</button>
-      <button class="mode-btn" onclick="setMode('listener',this)">👁 Bezoeker</button>
-    </div>
-  </nav>
-
-  <div class="screen" id="imam-screen">
-    <p class="section-label">Taal van de preek</p>
-    <div class="lang-row">
-      <button class="lang-btn active" onclick="setLang('ar',this)">🇸🇦 Arabisch</button>
-      <button class="lang-btn" onclick="setLang('tr',this)">🇹🇷 Turks</button>
-      <button class="lang-btn" onclick="setLang('ber',this)">🇲🇦 Berber</button>
-    </div>
-    <div class="record-wrap" id="mic-wrap">
-      <button class="record-btn" id="record-btn" onclick="toggleRecording()">
-        <span class="record-icon">🎙</span>
-        <span class="record-lbl" id="record-lbl">START</span>
-      </button>
-      <p class="record-hint" id="record-hint">Druk om live te beginnen. De vertaling verschijnt automatisch.</p>
-    </div>
-    <div id="fallback-wrap" style="display:none;width:100%;flex-direction:column;gap:10px;">
-      <div class="fallback-note">Live microfoon werkt het best in Chrome of Safari. Typ hieronder om de vertaling te testen.</div>
-      <textarea id="fallback-input" rows="4" placeholder="Typ een preektekst in het Arabisch, Turks of Berber..."></textarea>
-      <button class="send-btn" onclick="handleFallbackSend()">Vertaal naar Nederlands →</button>
-    </div>
-    <div class="box">
-      <p class="box-lbl">🔊 Herkend geluid</p>
-      <p class="box-text dim" id="interim-text">Start de opname hierboven</p>
-    </div>
-    <div class="trans-box">
-      <p class="box-lbl">🇳🇱 Nederlandse vertaling</p>
-      <div id="translation-output"><p class="trans-text dim">Vertaling verschijnt hier na elke zin...</p></div>
-    </div>
-    <div id="error-box" style="display:none;" class="error-box"></div>
-    <div class="history-wrap" id="history-wrap" style="display:none;">
-      <p class="section-label">Eerder vertaald</p>
-      <div id="history-list"></div>
-    </div>
-  </div>
-
-  <div class="screen hidden" id="listener-screen">
-    <div class="glyph" id="glyph">كشف</div>
-    <p class="glyph-sub" id="glyph-sub">Wacht op de preek...</p>
-    <div class="listener-card">
-      <div class="listener-header">
-        <div class="live-pill off" id="live-pill"><div class="live-dot off" id="live-dot"></div><span id="live-label">Wachten</span></div>
-        <span class="lang-pill">🇳🇱 Nederlands</span>
-      </div>
-      <div id="listener-output"><p class="listener-placeholder">Zodra de imam begint te spreken, verschijnt hier automatisch de Nederlandse vertaling — zin voor zin, in real-time.</p></div>
-    </div>
-    <div class="history-wrap" id="listener-history-wrap" style="display:none;">
-      <p class="section-label">Eerder gezegd</p>
-      <div id="listener-history-list"></div>
-    </div>
-  </div>
+<nav class="nav">
+<div class="logo">كشف<small>Kashf · Live Vertaling</small></div>
+<div class="mode-toggle">
+<button class="mode-btn active" onclick="setMode('imam',this)">🎙 Imam</button>
+<button class="mode-btn" onclick="setMode('listener',this)">👁 Bezoeker</button>
 </div>
-
+</nav>
+<div class="screen" id="imam-screen">
+<p class="section-label">Taal van de preek</p>
+<div class="lang-row">
+<button class="lang-btn active" onclick="setLang('ar',this)">🇸🇦 Arabisch</button>
+<button class="lang-btn" onclick="setLang('tr',this)">🇹🇷 Turks</button>
+<button class="lang-btn" onclick="setLang('ber',this)">🇲🇦 Berber</button>
+</div>
+<div class="record-wrap">
+<button class="record-btn" id="record-btn" onclick="toggleRecording()">
+<span class="record-icon">🎙</span>
+<span class="record-lbl" id="record-lbl">START</span>
+</button>
+<p class="record-hint" id="record-hint">Druk om live te beginnen. De vertaling verschijnt automatisch.</p>
+</div>
+<div class="box">
+<p class="box-lbl">🔊 Herkend geluid</p>
+<p class="box-text dim" id="interim-text">Start de opname hierboven</p>
+</div>
+<div class="trans-box">
+<p class="box-lbl">🇳🇱 Nederlandse vertaling</p>
+<div id="translation-output"><p class="trans-text dim">Vertaling verschijnt hier na elke zin...</p></div>
+</div>
+<div id="error-box" style="display:none;" class="error-box"></div>
+<div class="history-wrap" id="history-wrap" style="display:none;">
+<p class="section-label">Eerder vertaald</p>
+<div id="history-list"></div>
+</div>
+</div>
+<div class="screen hidden" id="listener-screen">
+<div class="glyph" id="glyph">كشف</div>
+<p class="glyph-sub" id="glyph-sub">Wacht op de preek...</p>
+<div class="listener-card">
+<div class="listener-header">
+<div class="live-pill off" id="live-pill"><div class="live-dot off" id="live-dot"></div><span id="live-label">Wachten</span></div>
+<span class="lang-pill">🇳🇱 Nederlands</span>
+</div>
+<div id="listener-output"><p class="listener-placeholder">Zodra de imam begint te spreken, verschijnt hier automatisch de Nederlandse vertaling.</p></div>
+</div>
+<div class="history-wrap" id="listener-history-wrap" style="display:none;">
+<p class="section-label">Eerder gezegd</p>
+<div id="listener-history-list"></div>
+</div>
+</div>
+</div>
 <script>
-  const ANTHROPIC_KEY = 'JOUW_ANTHROPIC_KEY_HIER';
-  const LANGS = { ar: 'ar-SA', tr: 'tr-TR', ber: 'ar-MA' };
-  let currentLang = 'ar';
-  let isRecording = false;
-  let recognition = null;
-  let pendingText = '';
-  let translateTimer = null;
-  let history = [];
-
-  function setMode(mode, btn) {
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('imam-screen').classList.toggle('hidden', mode !== 'imam');
-    document.getElementById('listener-screen').classList.toggle('hidden', mode !== 'listener');
-  }
-
-  function setLang(lang, btn) {
-    currentLang = lang;
-    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    if (isRecording) { stopRecording(); setTimeout(startRecording, 300); }
-  }
-
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    document.getElementById('mic-wrap').style.display = 'none';
-    document.getElementById('fallback-wrap').style.display = 'flex';
-  }
-
-  function toggleRecording() { isRecording ? stopRecording() : startRecording(); }
-
-  function startRecording() {
-    if (!SR) return;
-    const rec = new SR();
-    rec.lang = LANGS[currentLang];
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.onresult = (e) => {
-      let interim = '', final = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const t = e.results[i][0].transcript;
-        if (e.results[i].isFinal) final += t + ' ';
-        else interim += t;
-      }
-      document.getElementById('interim-text').textContent = interim || '...';
-      document.getElementById('interim-text').className = 'box-text interim';
-      if (final.trim()) {
-        pendingText += final;
-        clearTimeout(translateTimer);
-        translateTimer = setTimeout(() => {
-          const text = pendingText.trim(); pendingText = '';
-          document.getElementById('interim-text').textContent = 'Luistert...';
-          if (text) translate(text);
-        }, 900);
-      }
-    };
-    rec.onerror = (e) => {
-      if (e.error === 'no-speech' || e.error === 'aborted') return;
-      showError('Microfoon fout (' + e.error + '). Geef microfoon toestemming in je browserinstellingen.');
-      stopRecording();
-    };
-    rec.onend = () => { if (isRecording) { try { rec.start(); } catch(_) {} } };
-    recognition = rec;
-    try {
-      rec.start(); isRecording = true; hideError();
-      document.getElementById('record-btn').classList.add('recording');
-      document.getElementById('record-lbl').textContent = 'STOP';
-      document.getElementById('record-lbl').className = 'record-lbl on';
-      document.getElementById('record-hint').textContent = 'Luistert... spreek duidelijk in de microfoon';
-    } catch(e) { showError('Kon microfoon niet starten.'); isRecording = false; }
-  }
-
-  function stopRecording() {
-    isRecording = false;
-    if (recognition) { recognition.onend = null; try { recognition.stop(); } catch(_) {} recognition = null; }
-    clearTimeout(translateTimer);
-    document.getElementById('record-btn').classList.remove('recording');
-    document.getElementById('record-lbl').textContent = 'START';
-    document.getElementById('record-lbl').className = 'record-lbl';
-    document.getElementById('record-hint').textContent = 'Druk om live te beginnen. De vertaling verschijnt automatisch.';
-    document.getElementById('interim-text').textContent = 'Start de opname hierboven';
-    document.getElementById('interim-text').className = 'box-text dim';
-  }
-
-  function handleFallbackSend() {
-    const input = document.getElementById('fallback-input');
-    const text = input.value.trim();
-    if (!text) return;
-    input.value = '';
-    translate(text);
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('fallback-input');
-    if (input) input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleFallbackSend(); } });
-  });
-
-  async function translate(text) {
-    showDots(); hideError();
-    try {
-      const res = await fetch('/api/translate', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ text: text })
-          
-      const data = await res.json();
-      const t = data.translation;
-      if (t) { setTranslation(t); addToHistory(t); }
-    } catch(e) {
-      showError('Verbindingsfout. Controleer je internetverbinding.');
-    }
-  }
-
-  function setTranslation(text) {
-    document.getElementById('translation-output').innerHTML = '<p class="trans-text">' + esc(text) + '</p>';
-    document.getElementById('listener-output').innerHTML = '<p class="listener-trans">' + esc(text) + '</p>';
-    document.getElementById('glyph').classList.add('live');
-    document.getElementById('glyph-sub').textContent = 'Live · Nederlands';
-    document.getElementById('live-pill').className = 'live-pill on';
-    document.getElementById('live-dot').className = 'live-dot on';
-    document.getElementById('live-label').textContent = 'Live';
-  }
-
-  function addToHistory(text) {
-    history.unshift(text);
-    if (history.length > 6) history.pop();
-    if (history.length > 1) {
-      const html = history.slice(1).map(t => '<div class="history-item">' + esc(t) + '</div>').join('');
-      document.getElementById('history-wrap').style.display = 'flex';
-      document.getElementById('history-list').innerHTML = html;
-      document.getElementById('listener-history-wrap').style.display = 'flex';
-      document.getElementById('listener-history-list').innerHTML = html;
-    }
-  }
-
-  function showDots() {
-    const d = '<div class="dots"><span></span><span></span><span></span></div>';
-    document.getElementById('translation-output').innerHTML = d;
-    document.getElementById('listener-output').innerHTML = d;
-  }
-
-  function showError(msg) { const b = document.getElementById('error-box'); b.style.display = 'block'; b.textContent = msg; }
-  function hideError() { document.getElementById('error-box').style.display = 'none'; }
-  function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+const LANGS={ar:'ar-SA',tr:'tr-TR',ber:'ar-MA'};
+let currentLang='ar',isRecording=false,recognition=null,pendingText='',translateTimer=null,history=[];
+function setMode(mode,btn){document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('imam-screen').classList.toggle('hidden',mode!=='imam');document.getElementById('listener-screen').classList.toggle('hidden',mode!=='listener')}
+function setLang(lang,btn){currentLang=lang;document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(isRecording){stopRecording();setTimeout(startRecording,300)}}
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function toggleRecording(){isRecording?stopRecording():startRecording()}
+function startRecording(){if(!SR){showError('Spraakherkenning niet ondersteund. Gebruik Chrome.');return}const rec=new SR();rec.lang=LANGS[currentLang];rec.continuous=true;rec.interimResults=true;rec.onresult=(e)=>{let interim='',final='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)final+=t+' ';else interim+=t}document.getElementById('interim-text').textContent=interim||'...';document.getElementById('interim-text').className='box-text interim';if(final.trim()){pendingText+=final;clearTimeout(translateTimer);translateTimer=setTimeout(()=>{const text=pendingText.trim();pendingText='';document.getElementById('interim-text').textContent='Luistert...';if(text)translate(text)},900)}};rec.onerror=(e)=>{if(e.error==='no-speech'||e.error==='aborted')return;showError('Microfoon fout: '+e.error);stopRecording()};rec.onend=()=>{if(isRecording){try{rec.start()}catch(_){}}};recognition=rec;try{rec.start();isRecording=true;hideError();document.getElementById('record-btn').classList.add('recording');document.getElementById('record-lbl').textContent='STOP';document.getElementById('record-lbl').className='record-lbl on';document.getElementById('record-hint').textContent='Luistert... spreek duidelijk in de microfoon'}catch(e){showError('Kon microfoon niet starten.');isRecording=false}}
+function stopRecording(){isRecording=false;if(recognition){recognition.onend=null;try{recognition.stop()}catch(_){}recognition=null}clearTimeout(translateTimer);document.getElementById('record-btn').classList.remove('recording');document.getElementById('record-lbl').textContent='START';document.getElementById('record-lbl').className='record-lbl';document.getElementById('record-hint').textContent='Druk om live te beginnen. De vertaling verschijnt automatisch.';document.getElementById('interim-text').textContent='Start de opname hierboven';document.getElementById('interim-text').className='box-text dim'}
+async function translate(text){showDots();hideError();try{const res=await fetch('/api/translate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text})});const data=await res.json();const t=data.translation?.trim();if(t){setTranslation(t);addToHistory(t)}}catch(e){showError('Verbindingsfout. Controleer je internetverbinding.')}}
+function setTranslation(text){document.getElementById('translation-output').innerHTML='<p class="trans-text">'+esc(text)+'</p>';document.getElementById('listener-output').innerHTML='<p class="listener-trans">'+esc(text)+'</p>';document.getElementById('glyph').classList.add('live');document.getElementById('glyph-sub').textContent='Live · Nederlands';document.getElementById('live-pill').className='live-pill on';document.getElementById('live-dot').className='live-dot on';document.getElementById('live-label').textContent='Live'}
+function addToHistory(text){history.unshift(text);if(history.length>6)history.pop();if(history.length>1){const html=history.slice(1).map(t=>'<div class="history-item">'+esc(t)+'</div>').join('');document.getElementById('history-wrap').style.display='flex';document.getElementById('history-list').innerHTML=html;document.getElementById('listener-history-wrap').style.display='flex';document.getElementById('listener-history-list').innerHTML=html}}
+function showDots(){const d='<div class="dots"><span></span><span></span><span></span></div>';document.getElementById('translation-output').innerHTML=d;document.getElementById('listener-output').innerHTML=d}
+function showError(msg){const b=document.getElementById('error-box');b.style.display='block';b.textContent=msg}
+function hideError(){document.getElementById('error-box').style.display='none'}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 </script>
 </body>
 </html>
