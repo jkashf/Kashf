@@ -15,11 +15,11 @@ export default async function handler(req, res) {
     var boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
     var CRLF = '\r\n';
     var before = Buffer.from('--' + boundary + CRLF + 'Content-Disposition: form-data; name="file"; filename="audio.webm"' + CRLF + 'Content-Type: audio/webm' + CRLF + CRLF);
-    var after = Buffer.from(CRLF + '--' + boundary + CRLF + 'Content-Disposition: form-data; name="model"' + CRLF + CRLF + 'whisper-1' + CRLF + '--' + boundary + CRLF + 'Content-Disposition: form-data; name="language"' + CRLF + CRLF + (srcLang === 'tr' ? 'tr' : 'ar') + CRLF + '--' + boundary + CRLF + 'Content-Disposition: form-data; name="response_format"' + CRLF + CRLF + 'text' + CRLF + '--' + boundary + '--' + CRLF);
+    var after = Buffer.from(CRLF + '--' + boundary + CRLF + 'Content-Disposition: form-data; name="model"' + CRLF + CRLF + 'whisper-1' + CRLF + '--' + boundary + CRLF + 'Content-Disposition: form-data; name="language"' + CRLF + CRLF + (srcLang === 'tr' ? 'tr' : 'ar') + CRLF + '--' + boundary + '--' + CRLF);
     var formData = Buffer.concat([before, audioBuffer, after]);
     var response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
-      headers: {'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY, 'Content-Type': 'multipart/form-data; boundary=' + boundary, 'Content-Length': formData.length},
+      headers: {'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY, 'Content-Type': 'multipart/form-data; boundary=' + boundary},
       body: formData
     });
     if (!response.ok) { var err = await response.text(); res.status(500).json({ error: 'Whisper: ' + err.slice(0,200) }); return; }
