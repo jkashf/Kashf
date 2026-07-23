@@ -10,16 +10,33 @@ export default async function handler(req, res) {
     var lang = body.lang || 'nl';
     var prev = body.prev || '';
     if (!text) { res.status(400).json({ error: 'Geen tekst' }); return; }
-    var langNames = {nl:'Nederlands',en:'English',fr:'francais',de:'Deutsch',es:'espanol',ar_out:'arabisch'};
-    var systemPrompt = 'Vertaal naar ' + (langNames[lang]||'Nederlands') + '. Geef ALLEEN de vertaling. Geen uitleg. Als Profeet Mohammed wordt genoemd voeg vrede zij met hem toe.' + (prev ? ' Vorige zin: "' + prev + '".' : '');
+    var systemPrompt = 'Vertaal naar Nederlands. Geef ALLEEN de vertaling. Geen uitleg.' + (prev ? ' Vorige zin: "' + prev + '".' : '');
+    if(lang==='en') systemPrompt = 'Translate to English. Give ONLY the translation. No explanations.';
+    if(lang==='fr') systemPrompt = 'Traduis en francais. Donne SEULEMENT la traduction.';
+    if(lang==='de') systemPrompt = 'Uebersetze ins Deutsche. Gib NUR die Uebersetzung.';
+    if(lang==='es') systemPrompt = 'Traduce al espanol. Da SOLO la traduccion.';
+    if(lang==='ar_out') systemPrompt = 'ترجم للعربية. أعط الترجمة فقط.';
     var response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_KEY, 'anthropic-version': '2023-06-01'},
-      body: JSON.stringify({model: 'claude-haiku-4-5-20251001', max_tokens: 400, system: systemPrompt, messages: [{role: 'user', content: text}]})
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 400,
+        system: systemPrompt,
+        messages: [{role: 'user', content: text}]
+      })
     });
     var data = await response.json();
-    var translation = data.content && data.content[0] ? data.content[0].text.trim() : '';
-    res.status(200).json({ translation });
+    if(!response.ok) { res.status(500).json({ error: JSON.stringify(data) }); return; }
+    var translation = '';
+    if(data.content && data.content.length > 0 && data.content[0].text) {
+      translation = data.content[0].text.trim();
+    }
+    res.status(200).json({ translation: translation });
   } catch(e) {
     res.status(500).json({ error: e.message });
   }
